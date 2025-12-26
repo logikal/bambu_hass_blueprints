@@ -1,0 +1,90 @@
+blueprint:
+  name: Bambu Lab Error Logger
+  description: >-
+    Logs Bambu Lab printer errors (both Print Errors and HMS Errors) to the 
+    Home Assistant logbook for historical tracking. Since error details are 
+    stored as attributes on binary sensors, they aren't preserved in history 
+    by default. This blueprint captures those details in the logbook.
+
+    Supports multiple printers — just select all your print error and HMS error 
+    sensors.
+
+    Depends on https://github.com/greghesp/ha-bambulab.
+  domain: automation
+  author: logikal
+  source_url: https://github.com/logikal/bambu-error-logger
+  input:
+    print_error_entities:
+      name: Print Error Sensors
+      description: Select the print error binary sensors for all your Bambu printers
+      default: []
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+              integration: bambu_lab
+          multiple: true
+    hms_error_entities:
+      name: HMS Error Sensors
+      description: Select the HMS error binary sensors for all your Bambu printers
+      default: []
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+              integration: bambu_lab
+          multiple: true
+
+variables:
+  print_error_list: !input print_error_entities
+  hms_error_list: !input hms_error_entities
+
+trigger:
+  - platform: state
+    entity_id: !input print_error_entities
+    to: "on"
+  - platform: state
+    entity_id: !input hms_error_entities
+    to: "on"
+
+condition: []
+
+action:
+  - variables:
+      is_print_error: "{{ trigger.entity_id in print_error_list }}"
+      is_hms_error: "{{ trigger.entity_id in hms_error_list }}"
+      printer_name: "{{ state_attr(trigger.entity_id, 'friendly_name') | regex_replace(' [Pp]rint [Ee]rror$| HMS [Ee]rrors?$', '') }}"
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ is_print_error }}"
+        sequence:
+          - service: logbook.log
+            data:
+              name: "{{ printer_name }}"
+              message: >-
+                Print Error [{{ state_attr(trigger.entity_id, 'code') }}]: 
+                {{ state_attr(trigger.entity_id, 'error') }}
+              entity_id: "{{ trigger.entity_id }}"
+              domain: bambu_lab
+
+      - conditions:
+          - condition: template
+            value_template: "{{ is_hms_error }}"
+        sequence:
+          - repeat:
+              count: "{{ state_attr(trigger.entity_id, 'Count') | int(0) }}"
+              sequence:
+                - service: logbook.log
+                  data:
+                    name: "{{ printer_name }}"
+                    message: >-
+                      HMS {{ state_attr(trigger.entity_id, (repeat.index | string) ~ '-Severity') | upper }}
+                      [{{ state_attr(trigger.entity_id, (repeat.index | string) ~ '-Code') }}]: 
+                      {{ state_attr(trigger.entity_id, (repeat.index | string) ~ '-Error') }}
+                      ({{ state_attr(trigger.entity_id, (repeat.index | string) ~ '-Wiki') }})
+                    entity_id: "{{ trigger.entity_id }}"
+                    domain: bambu_lab
+
+mode: queued
+max: 10
