@@ -12,7 +12,8 @@ The [ha-bambulab](https://github.com/greghesp/ha-bambulab) integration exposes p
 
 ## One-Click Installation
 
-[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Flogikal%2Fbambu_hass_blueprints%2Fblob%2Fmain%2Fautomation%2Fbambu_error_logger.yaml)
+1. [![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Flogikal%2Fbambu_hass_blueprints%2Fblob%2Fmain%2Fautomation%2Fbambu_error_logger.yaml)
+2. Select your print error and HMS error sensors (supports multiple printers)
 
 ## Manual Installation
 
