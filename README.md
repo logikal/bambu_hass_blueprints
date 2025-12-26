@@ -55,4 +55,4 @@ X1C: HMS SERIOUS [HMS_0300_1200_0002_0001]: The front cover of the toolhead fell
 
 ## License
 
-MIT
+[Apache 2.0 License](LICENSE)
